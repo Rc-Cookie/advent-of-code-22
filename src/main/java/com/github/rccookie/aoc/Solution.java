@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Calendar;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -49,13 +50,17 @@ public abstract class Solution {
         return Integer.parseInt(name.substring(i+1));
     }
 
+    public int getYear() {
+        return Calendar.getInstance().get(Calendar.YEAR);
+    }
+
 
 
     public static void run(Class<? extends Solution> type, Boolean task2) {
         try {
             Constructor<? extends Solution> ctor = type.getDeclaredConstructor();
             Solution s = ctor.newInstance();
-            int day = s.getDay();
+            int day = s.getDay(), year = s.getYear();
 
             String token;
             try {
@@ -72,7 +77,7 @@ public abstract class Solution {
             Wrapper<Integer> possibleAnswer = new Wrapper<>(null);
             new Thread(() -> {
                 try {
-                    HttpURLConnection con = (HttpURLConnection) new URL("https://adventofcode.com/2022/day/"+day).openConnection();
+                    HttpURLConnection con = (HttpURLConnection) new URL("https://adventofcode.com/"+year+"/day/"+day).openConnection();
                     con.setRequestProperty("Cookie", "session=" + token);
                     Document d = XML.parse(con.getInputStream(), XML.HTML);
 
@@ -110,7 +115,7 @@ public abstract class Solution {
             if(Files.exists(inputFile))
                 s.input = Files.readString(inputFile);
             else {
-                s.input = new HttpRequest("https://adventofcode.com/2022/day/"+day+"/input")
+                s.input = new HttpRequest("https://adventofcode.com/"+year+"/day/"+day+"/input")
                         .setCookies("session=" + token)
                         .send().data.waitFor();
                 if(s.input.startsWith("Puzzle inputs differ by user.")) {
@@ -178,9 +183,9 @@ public abstract class Solution {
             Console.log("Submitting answer...");
 
             HtmlUnitDriver driver = new HtmlUnitDriver();
-            driver.get("https://adventofcode.com/2022/day/1");
+            driver.get("https://adventofcode.com/"+year+"/day/"+day);
             driver.manage().addCookie(new Cookie("session", token));
-            driver.get("https://adventofcode.com/2022/day/1");
+            driver.get("https://adventofcode.com/"+year+"/day/"+day);
             WebElement answer = driver.findElement(By.name("answer"));
             answer.sendKeys(result);
             answer.submit();
