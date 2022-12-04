@@ -14,11 +14,13 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.function.ToLongFunction;
 
 import com.github.rccookie.http.HttpRequest;
 import com.github.rccookie.json.Json;
 import com.github.rccookie.json.JsonObject;
 import com.github.rccookie.util.Console;
+import com.github.rccookie.util.ListStream;
 import com.github.rccookie.util.Wrapper;
 import com.github.rccookie.xml.Document;
 import com.github.rccookie.xml.Node;
@@ -32,6 +34,8 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 public abstract class Solution {
 
     protected String input = null;
+    protected ListStream<String> lines = null;
+    protected String[] linesArr = null;
 
 
     public abstract Object task1();
@@ -54,9 +58,24 @@ public abstract class Solution {
         return Calendar.getInstance().get(Calendar.YEAR);
     }
 
+    protected long sum(ToLongFunction<String> mapper) {
+        return lines.mapToLong(mapper).sum();
+    }
+
+    protected ListStream<String> split(String regex) {
+        return ListStream.of(input.split(regex)).useAsList();
+    }
+
+    protected void printInputStats() {
+        Console.map("Input statistics",
+                "Lines:", linesArr.length,
+                "| Chars:", lines.mapToLong(String::length).sum(),
+                "| Blank lines:", lines.filter(String::isBlank).count());
+    }
 
 
-    public static void run(Class<? extends Solution> type, Boolean task2) {
+
+    public static void run(Class<? extends Solution> type, int execTask) {
         try {
             Constructor<? extends Solution> ctor = type.getDeclaredConstructor();
             Solution s = ctor.newInstance();
@@ -115,6 +134,7 @@ public abstract class Solution {
             if(Files.exists(inputFile))
                 s.input = Files.readString(inputFile);
             else {
+                Console.log("Fetching input...");
                 s.input = new HttpRequest("https://adventofcode.com/"+year+"/day/"+day+"/input")
                         .setCookies("session=" + token)
                         .send().data.waitFor();
@@ -124,10 +144,15 @@ public abstract class Solution {
                 }
                 Files.writeString(inputFile, s.input);
             }
+            s.lines = ListStream.of(s.input.lines()).useAsList();
+            s.linesArr = s.input.split("\r?\n");
+
+            s.printInputStats();
+
 
             Object resultObj;
             int task;
-            if(task2 == null) {
+            if(execTask < 1 || execTask > 2) {
                 try {
                     resultObj = s.task2();
                     task = 1;
@@ -136,7 +161,7 @@ public abstract class Solution {
                     task = 0;
                 }
             }
-            else if(!task2) {
+            else if(execTask == 1) {
                 resultObj = s.task1();
                 task = 0;
             }
@@ -173,7 +198,7 @@ public abstract class Solution {
                 if(possibleAnswer.value == 0) {
                     Console.log("Cannot submit second solution before first.");
                     if(Console.inputYesNo("Execute task 1 instead?"))
-                        run(type, false);
+                        run(type, 1);
                 }
                 return;
             }
@@ -207,13 +232,22 @@ public abstract class Solution {
     }
 
     public static void run(Class<? extends Solution> type) {
-        run(type, null);
+        run(type, 0);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void run(int task) {
+        try {
+            run((Class<? extends Solution>) Class.forName(Thread.currentThread().getStackTrace()[2].getClassName()), task);
+        } catch(Exception e) {
+            throw new AssertionError(e);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public static void run() {
         try {
-            run((Class<? extends Solution>) Class.forName(Thread.currentThread().getStackTrace()[2].getClassName()));
+            run((Class<? extends Solution>) Class.forName(Thread.currentThread().getStackTrace()[2].getClassName()), 0);
         } catch(Exception e) {
             throw new AssertionError(e);
         }

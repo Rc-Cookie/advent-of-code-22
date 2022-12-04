@@ -1,6 +1,5 @@
 package com.github.rccookie.aoc.solutions;
 
-import java.util.Arrays;
 import java.util.stream.LongStream;
 
 import com.github.rccookie.aoc.Solution;
@@ -23,8 +22,7 @@ public class Solution1 extends Solution {
     }
 
     private LongStream blockSums() {
-        return Arrays.stream(input.split("\n\r?\n\r?"))
-                .mapToLong(block -> block.lines().mapToLong(Long::parseLong).sum());
+        return split("\n\r?\n\r?").mapToLong(block -> block.lines().mapToLong(Long::parseLong).sum());
     }
 
 
