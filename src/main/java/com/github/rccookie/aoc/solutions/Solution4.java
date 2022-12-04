@@ -9,8 +9,6 @@ public class Solution4 extends Solution {
 
     @Override
     public Object task1() {
-        // [ --- ]
-        //       [ - ]
         return ranges().filter(r -> (r[0] <= r[2] && r[1] >= r[3]) ||
                                     (r[0] >= r[2] && r[1] <= r[3])).count();
     }
