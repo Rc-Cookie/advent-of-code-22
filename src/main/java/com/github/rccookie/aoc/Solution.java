@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -34,6 +35,8 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 public abstract class Solution {
 
     protected String input = null;
+    protected char[] chars = null;
+    protected List<Character> charList = null;
     protected ListStream<String> lines = null;
     protected String[] linesArr = null;
 
@@ -144,6 +147,8 @@ public abstract class Solution {
                 }
                 Files.writeString(inputFile, s.input);
             }
+            s.chars = s.input.toCharArray();
+            s.charList = s.input.chars().mapToObj(c -> (char) c).toList();
             s.lines = ListStream.of(s.input.lines()).useAsList();
             s.linesArr = s.input.split("\r?\n");
 
