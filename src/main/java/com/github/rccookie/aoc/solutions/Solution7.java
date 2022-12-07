@@ -1,16 +1,18 @@
 package com.github.rccookie.aoc.solutions;
 
+import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Stream;
 
 import com.github.rccookie.aoc.Solution;
-import com.github.rccookie.graph.Graph;
-import com.github.rccookie.graph.HashGraph;
+import com.github.rccookie.graph.Graphs;
+import com.github.rccookie.graph.HashTree;
+import com.github.rccookie.graph.Tree;
 
 public class Solution7 extends Solution {
 
     Stack<String> path = new Stack<>();
-    Graph<String, Long> fileTree = new HashGraph<>();
+    Tree<String, Long> fileTree = new HashTree<>("/");
 
     @Override
     public Object task1() {
@@ -31,7 +33,7 @@ public class Solution7 extends Solution {
 
     private void loadFileTree() {
         fileTree.clear();
-        fileTree.connect("/", "/", 0L);
+        fileTree.addRoot("/");
 
         for(int i=1; i<linesArr.length; i++) {
             assert linesArr[i].startsWith("$ ");
@@ -44,7 +46,7 @@ public class Solution7 extends Solution {
                     String cd = cd();
                     String name = cmd.substring(3), fullName = sub(cd, name);
                     if(!fileTree.contains(fullName))
-                        fileTree.connect(cd, fullName, 0L);
+                        fileTree.add(fullName, cd, 0L);
                     path.push(name);
                 }
             }
@@ -55,9 +57,9 @@ public class Solution7 extends Solution {
                     if(!linesArr[++i].startsWith("dir")) {
                         String[] parts = linesArr[i].split(" ");
                         long size = Long.parseLong(parts[0]);
-                        fileTree.connect(cd, sub(cd, parts[1]), size);
-                        for(int j=0; j<=path.size(); j++)
-                            fileTree.connect(cd(j-1), cd(j), sizeof(cd(j)) + size);
+                        fileTree.add(sub(cd, parts[1]), cd, size);
+                        for(int j=1; j<=path.size(); j++)
+                            fileTree.setEdgeTo(cd(j), sizeof(cd(j)) + size);
                     }
                 }
             }
@@ -81,12 +83,10 @@ public class Solution7 extends Solution {
         return dir.length() == 1 ? '/'+file : dir+'/'+file;
     }
 
-    private String parent(String path) {
-        return path.lastIndexOf('/') < 1 ? "/" : path.substring(0, path.lastIndexOf('/'));
-    }
-
     private long sizeof(String f) {
-        return fileTree.edge(parent(f), f);
+        if(f.equals("/"))
+            return fileTree.adj("/").stream().map(Map.Entry::getKey).mapToLong(this::sizeof).sum();
+        return fileTree.edgeTo(f);
     }
 
     private Stream<String> dirs() {
@@ -94,15 +94,8 @@ public class Solution7 extends Solution {
     }
 
     private void printTree() {
-        Stack<String> stack = new Stack<>();
-        stack.push("/");
-        while(!stack.isEmpty()) {
-            String f = stack.pop();
+        for(String f : Graphs.traverseDepthFirst(fileTree))
             System.out.println((f.length()==1?"/":"  ".repeat((int) f.chars().filter(c -> c == '/').count()) + f.substring(f.lastIndexOf('/') + 1)) + " - " + sizeof(f));
-            for(String sf : fileTree.adj(f))
-                if(!sf.equals("/"))
-                    stack.push(sf);
-        }
     }
 
     public static void main(String[] args) {
