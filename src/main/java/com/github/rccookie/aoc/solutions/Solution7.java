@@ -32,9 +32,6 @@ public class Solution7 extends Solution {
     }
 
     private void loadFileTree() {
-        fileTree.clear();
-        fileTree.addRoot("/");
-
         for(int i=1; i<linesArr.length; i++) {
             assert linesArr[i].startsWith("$ ");
             String cmd = linesArr[i].substring(2);
@@ -95,7 +92,7 @@ public class Solution7 extends Solution {
 
     private void printTree() {
         for(String f : Graphs.traverseDepthFirst(fileTree))
-            System.out.println((f.length()==1?"/":"  ".repeat((int) f.chars().filter(c -> c == '/').count()) + f.substring(f.lastIndexOf('/') + 1)) + " - " + sizeof(f));
+            System.out.println((f.length()==1?"/":"  ".repeat(fileTree.depth(f)) + f.substring(f.lastIndexOf('/') + 1)) + " - " + sizeof(f));
     }
 
     public static void main(String[] args) {
