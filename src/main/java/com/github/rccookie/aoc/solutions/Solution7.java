@@ -16,7 +16,6 @@ public class Solution7 extends Solution {
 
     @Override
     public Object task1() {
-        loadFileTree();
         return dirs().mapToLong(this::sizeof)
                 .filter(s -> s<=100000)
                 .sum();
@@ -24,14 +23,14 @@ public class Solution7 extends Solution {
 
     @Override
     public Object task2() {
-        loadFileTree();
         long req = 30000000 - (70000000 - sizeof("/"));
         return dirs().mapToLong(this::sizeof)
                 .filter(s -> s >= req)
                 .min();
     }
 
-    private void loadFileTree() {
+    @Override
+    public void load() {
         for(int i=1; i<linesArr.length; i++) {
             assert linesArr[i].startsWith("$ ");
             String cmd = linesArr[i].substring(2);

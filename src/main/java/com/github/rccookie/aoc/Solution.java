@@ -50,6 +50,8 @@ public abstract class Solution {
         throw new NotImplemented();
     }
 
+    public void load() { }
+
     public int getDay() {
         String name = getClass().getSimpleName();
         int i = name.length() - 2;
@@ -154,6 +156,7 @@ public abstract class Solution {
 
             s.printInputStats();
 
+            s.load();
 
             Object resultObj;
             int task;
@@ -192,7 +195,7 @@ public abstract class Solution {
 
             String result = Objects.toString(resultObj);
             Console.map("Result", result);
-            if(result.isBlank()) System.exit(0);
+            if(result.isBlank() || result.equals("null")) System.exit(0);
 
 
             synchronized(possibleAnswer) {
